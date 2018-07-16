@@ -9,13 +9,12 @@ from pytdx.hq import TdxHq_API
 import numpy as np
 import pandas as pd
 import talib
-
+import global_env
 
 TDX_SERVER_PORT = 7709
 TDX_SERVER_IP = '119.147.212.81'
 TDX_KTYPE_MAP = {'5':0,'15':1,'30':2,'Hour':3,'Day':9}
 
-SEC_FILE = r'/Users/xiaowen/Development/git/project_market/data/all_sec.csv'
 
 
 # tdx loader
@@ -50,7 +49,7 @@ class tdx_loader(object):
         
     def load(self, market, code, ktype):
         # 5 mins K data
-        times = 20
+        times = 40
         if ktype == TDX_KTYPE_MAP['Day']:
             times = 3
         
@@ -63,7 +62,7 @@ class tdx_loader(object):
             else:
                 data = data.append(temp)
             # ... same codes...
-        return self.prepareMACD(data.reset_index())
+        return self.formatTdxData(self.prepareMACD(data.reset_index()))
 
     def prepareMACD(self, df):
         close = [float(x) for x in df['close']]
@@ -74,12 +73,17 @@ class tdx_loader(object):
         return df
  
 
+    def formatTdxData(self, df):
+        return df[['index','open','close','high','low','vol','amount','datetime','MACD','MACDsignal','MACDhist']]
+    
 
 if __name__ == "__main__":
     loader = tdx_loader()
-    df_sec = pd.read_csv(SEC_FILE,dtype={'code': 'str', 'market':'int'})
+    df_sec = pd.read_csv(global_env.SEC_FILE,dtype={'code': 'str', 'market':'int'})
     for index, row in df_sec[0:1].iterrows():
         df = loader.load(row['market'], row['code'], TDX_KTYPE_MAP['5'])
+        
+        #df = df[['index']]
         print(df[:10], len(df))
 
 
