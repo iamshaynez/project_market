@@ -9,11 +9,19 @@ Created on Sun Jul 15 21:19:33 2018
 import pandas as pd
 import numpy as np
 import datetime
+from global_env import PARAMETER_K_SIZE, PARAMETER_RESULT_WITHIN_DAYS
 
-PARAMETER_K_SIZE = 60
-RESULT_WITHIN_DAYS = 3
+'''
+MACD: Short term line
+MACDsignal: Longer term line
+MACDhist: Green and Red bar
+-----
+Translate the relationship between 3 indices into one dimensional data
+>>
 
-def trainingData(df_long, df_short, df_day, date):
+
+'''
+def trainingExample(df_long, df_short, df_day, date):
     no_data_flag = False
     strDate = getDateTimeWithEndMarketHour(date)
     # short term
@@ -27,31 +35,40 @@ def trainingData(df_long, df_short, df_day, date):
         no_data_flag = True
     
     if no_data_flag == False:
+        # pull one set of K bar data
         df_X_short = df_short.loc[cur_index_short[0]-PARAMETER_K_SIZE+1:cur_index_short[0]].copy()
         df_X_long = df_long.loc[cur_index_long[0]-PARAMETER_K_SIZE+1:cur_index_long[0]].copy()
-       
-        df_X_short = normalize(df_X_short,'MACD','MACDhist')
-        df_X_long = normalize(df_X_long,'MACD','MACDhist')
         
+        # normalize K bar data
+        df_X_short = normalize(df_X_short)
+        df_X_long = normalize(df_X_long)
+
         
         # not working from here
-        X_values = df_X_short['MACD_NML'].tolist()
-        #X_values2 = df_X['MACDhist_NML'].tolist()
+        X_short = df_X_short['MACDfinal'].tolist()
+        X_long = df_X_long['MACDfinal'].tolist()
         
-        df_X_values = pd.DataFrame(X_values)
+        # validation again
+        df_X_values_short = pd.DataFrame(X_short)
         
-        if df_X_values.shape[0] > 0:
-            if not np.isfinite(df_X_values[0]).all():
-                return None, None, None, None
+        if df_X_values_short.shape[0] > 0:
+            if not np.isfinite(df_X_values_short[0]).all():
+                return None, None
+        
+        df_X_values_long = pd.DataFrame(X_long)
+        
+        if df_X_values_long.shape[0] > 0:
+            if not np.isfinite(df_X_values_long[0]).all():
+                return None, None
+        
     
         # result
         #print('single4 ', datetime.datetime.now())
-        score = getScore(df_day, date, RESULT_WITHIN_DAYS)
+        score = getScore(df_day, date, PARAMETER_RESULT_WITHIN_DAYS)
         #print('single5 ', datetime.datetime.now())
-        return X_values, score
+        return X_short, score
     else:
         return None, None
-
 
 
 
@@ -62,7 +79,7 @@ Mark the score based on next few days performance
 '''
 def getScore(df_day, date, afterDays = 3):
     profit, lose = getHighestAndLowestPct(df_day, date, afterDays)
-    if lose < -0.1 and profit < 0.05:
+    if lose < -0.10 and profit < 0.05:
         return 0
     elif profit > 0.06 and lose > -0.05:
         return 2
@@ -72,13 +89,21 @@ def getScore(df_day, date, afterDays = 3):
 normalize
 ----
 normalize data
+
+USE avg of MACD and MACDsignal
+NML with MACDhist
+
+assuming the df is with MACD, MACDsignal, MACDhist - all 3 columns
 '''
-def normalize(df, *cols):
-    for col in cols:
-        tmp_max = abs(df[col].max())
-        tmp_min = abs(df[col].min())
-        tmp = tmp_max if tmp_max >= tmp_min else tmp_min
-        df[col + '_NML'] = df[col] / tmp
+def normalize(df):
+    df['MACD2'] = (df['MACD'] + df['MACDsignal'])/2
+    tmp_max = abs(df['MACD2'].max())
+    tmp_min = abs(df['MACD2'].min())
+    tmp = tmp_max if tmp_max >= tmp_min else tmp_min
+    df['MACD2_NML'] = df['MACD2'] / tmp
+    df['MACDhist_NML'] = df['MACDhist']/tmp
+    df['MACDfinal'] = df['MACD2_NML'] * (abs(df['MACDhist_NML']) + 0.5)
+    
     return df
 
 

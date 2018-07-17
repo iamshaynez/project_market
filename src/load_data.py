@@ -80,11 +80,13 @@ class tdx_loader(object):
 if __name__ == "__main__":
     loader = tdx_loader()
     df_sec = pd.read_csv(global_env.SEC_FILE,dtype={'code': 'str', 'market':'int'})
+    df = None
     for index, row in df_sec[0:1].iterrows():
         df = loader.load(row['market'], row['code'], TDX_KTYPE_MAP['5'])
         
         #df = df[['index']]
-        print(df[:10], len(df))
+        print(df[23740:23760], len(df))
 
 
-    
+    for index, row in df[23740:23760].iterrows():
+        print(index, row['MACD']**(-row['MACDhist']))
