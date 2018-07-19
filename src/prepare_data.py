@@ -7,12 +7,12 @@ Created on Sun Jul 15 21:19:33 2018
 """
 
 import load_data
-from global_env import SEC_FILE,PARAMETER_K_SIZE
+from global_env import SEC_FILE,PARAMETER_K_SIZE, LOAD_SEC_START, LOAD_SEC_END
 import pandas as pd
 from logic import trainingExample
 import datetime
 
-def prepareExamples():
+def prepareExamples(start, end):
     loader = load_data.tdx_loader()
     rng = pd.date_range(end=datetime.date.today() - datetime.timedelta(7) , periods = 400, freq='1B')
     rng = rng.format(formatter=lambda x: x.strftime('%Y-%m-%d'))
@@ -20,7 +20,7 @@ def prepareExamples():
     lst_y = []
     
     df_sec = pd.read_csv(SEC_FILE,dtype={'code': 'str', 'market':'int'})
-    for index, row in df_sec[0:2].iterrows():
+    for index, row in df_sec[start:end].iterrows():
         # load short mins K data
         df_short = loader.load(row['market'], row['code'], load_data.TDX_KTYPE_MAP['5'])
         
@@ -49,6 +49,6 @@ def prepareExamples():
     return lst_X, lst_y
 
 if __name__ == "__main__":
-    X, y = prepareExamples()
+    X, y = prepareExamples(LOAD_SEC_START,LOAD_SEC_END)
     print(len(X), len(y))
-    print(y)
+    print(X[0:1])
