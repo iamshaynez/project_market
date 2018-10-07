@@ -10,6 +10,7 @@ Created on Thu Jul 19 21:43:53 2018
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import confusion_matrix
+from sklearn import svm
 #import util
 import datetime
 import matplotlib.pyplot as plt
@@ -18,8 +19,17 @@ import itertools
 
 def getClassifiers():
     models = {}
-    model = RandomForestClassifier(class_weight='balanced',n_estimators=50)
-    models['RandomForestClassifier'] = model
+    model = KNeighborsClassifier(n_neighbors=4, weights='distance', algorithm='auto', 
+                                 leaf_size=400, p=2, metric='minkowski', metric_params=None, n_jobs=2)
+    models['KNeighborsClassifier1'] = model
+          
+    model = KNeighborsClassifier(n_neighbors=4, weights='distance', algorithm='auto', 
+                                 leaf_size=200, p=2, metric='minkowski', metric_params=None, n_jobs=2)
+    models['KNeighborsClassifier2'] = model
+          
+    model = svm.SVC()
+    models['SVC'] = model
+    
     
     return models
 
@@ -39,7 +49,7 @@ def evaluate(models, X, y_true):
         y_predict = model.predict(X)
         cnf_matrix = confusion_matrix(y_true, y_predict)
         plt.figure()
-        plot_confusion_matrix(cnf_matrix, classes=class_names, normalize=True,
+        plot_confusion_matrix(cnf_matrix, classes=class_names, normalize=False,
                       title='Normalized confusion matrix')
 
         plt.show()

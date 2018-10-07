@@ -12,8 +12,8 @@ import talib
 import global_env
 
 TDX_SERVER_PORT = 7709
-TDX_SERVER_IP = '119.147.212.81'
-TDX_KTYPE_MAP = {'5':0,'15':1,'30':2,'Hour':3,'Day':9}
+TDX_SERVER_IP = '218.108.47.69'
+TDX_KTYPE_MAP = {'5':0,'15':1,'30':2,'60':3,'Day':9, 'Test':8}
 
 
 
@@ -48,20 +48,22 @@ class tdx_loader(object):
         print(class_name, "Destroy...")
         
     def load(self, market, code, ktype):
+        #print('%s start loading...ktype %i' % (code,ktype))
         # 5 mins K data
-        times = 40
+        times = 35
         if ktype == TDX_KTYPE_MAP['Day']:
-            times = 3
+            times = 10
         
         for i in range(times):
             
             temp = self.api.to_df(self.api.get_security_bars(ktype, market, code, (times-1-i)*800, 800))
-            #print('%i records loaded' % temp.shape[0])
+            
             if i == 0:
                 data = temp
             else:
                 data = data.append(temp)
             # ... same codes...
+        #print('%s complete loading...ktype %i' % (code,ktype))
         return self.formatTdxData(self.prepareMACD(data.reset_index()))
 
     def prepareMACD(self, df):
@@ -82,11 +84,13 @@ if __name__ == "__main__":
     df_sec = pd.read_csv(global_env.SEC_FILE,dtype={'code': 'str', 'market':'int'})
     df = None
     for index, row in df_sec[0:1].iterrows():
-        df = loader.load(row['market'], row['code'], TDX_KTYPE_MAP['5'])
+        df = loader.load(row['market'], '002900', TDX_KTYPE_MAP['15'])
         
         #df = df[['index']]
         print(df[23740:23760], len(df))
 
+    writer = pd.ExcelWriter(global_env.DATA_FOLDER + '/_load_data_main_.xlsx')
+    df.to_excel(writer,'Sheet1')
+    #df2.to_excel(writer,'Sheet2')
+    writer.save()
 
-    for index, row in df[23740:23760].iterrows():
-        print(index, row['MACD']**(-row['MACDhist']))

@@ -9,6 +9,7 @@ Created on Thu Jul 19 23:19:35 2018
 import model as md
 import util
 from global_env import DATA_FOLDER
+from sklearn import preprocessing 
 
 TRAINING_EXAMPLES = 'default'
 
@@ -25,6 +26,9 @@ def load_test_data():
 def run():
     print('loading training data...')
     X, y = load_training_data()
+    #min_max_scaler = preprocessing.MinMaxScaler()
+    #X = min_max_scaler.fit_transform(X)
+    
     util.count(y)
     print('loading data completed.')
     print('loading models...')
@@ -36,6 +40,9 @@ def run():
     
     print('loading test data...')
     X_test, y_test = load_test_data()
+    #min_max_scaler = preprocessing.MinMaxScaler()
+    #X_test = min_max_scaler.fit_transform(X_test)
+    
     util.count(y_test)
     print('loading test data completed...')
     
@@ -45,3 +52,4 @@ def run():
     
 if __name__ == "__main__":
     run()
+    

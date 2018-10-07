@@ -52,4 +52,4 @@ def pickle_load(file_path):
 
 
 def count(y):
-    print('2: %i, 1: %i, 0: %i' % (y.count(2), y.count(1), y.count(0)))
+    print('4: %i, 3: %i, 2: %i, 1: %i, 0: %i' % (y.count(4),y.count(3),y.count(2), y.count(1), y.count(0)))
