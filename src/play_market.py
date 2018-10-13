@@ -10,7 +10,7 @@ import load_data
 TRAINING_EXAMPLES = 'Data'
 
 REPORT_NAME_PD = 'daily_report.xlsx'
-REPORT_NAME_NEW = 'daily_report_newday.xlsx'
+REPORT_NAME_NEW = 'daily_report_cd.xlsx'
 
 def getScore(df_matrix, y):
     return df_matrix[y] * 25
@@ -18,7 +18,7 @@ def getScore(df_matrix, y):
 def init():
     #df = prepareExampleAsOfDay(0,'000001','2018-09-21')
     #print(df)
-    asOfDay = '2018-09-27'
+    asOfDay = '2018-10-10'
     loader = load_data.tdx_loader()
     
     print('load model...', datetime.datetime.now())
@@ -26,7 +26,7 @@ def init():
     score_matrix = util.pickle_load(DATA_FOLDER + TRAINING_EXAMPLES + '_df_mean.pickle')
     #print(score_matrix)
     print('load sec list...', datetime.datetime.now())
-    df_sec = pd.read_csv(DATA_FOLDER + 'mysec.csv',dtype={'code': 'str', 'market':'int'} )
+    df_sec = pd.read_csv(DATA_FOLDER + 'all_sec.csv',dtype={'code': 'str', 'market':'int'} )
     df_sec = df_sec.set_index('code')
     
     print(df_sec)
@@ -43,17 +43,17 @@ def init():
             score = getScore(score_matrix, group)
         except:
             df_result[asOfDay][index] = -1
-            print('%s,%s,%f' % (index,row['name'], -1))
+            print('%s,%s,%f' % (index,row['name'], -1), datetime.datetime.now())
         else:
             df_result[asOfDay][index] = score
-            print('%s,%s,%f' % (index,row['name'], score))
+            print('%s,%s,%f' % (index,row['name'], score), datetime.datetime.now())
     
     writer = pd.ExcelWriter(DATA_FOLDER + REPORT_NAME_PD)
     df_result.to_excel(writer,'Report')
     writer.save()
 
 def delta():
-    asOfDay = '2018-09-28'
+    asOfDay = '2018-10-11'
     loader = load_data.tdx_loader()
     
     print('load model...', datetime.datetime.now())
